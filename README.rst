@@ -14,6 +14,8 @@ pymodaq_plugins_stellarnet (StellarNet)
 
 Custom PyMoDAQ Plugin to use StellarNet spectrometers in PyMoDAQ.
 
+**Important:** this plugin only works with Python 3.8, and will not work for later versions. This is due to the pyusb version that is currently used by the constructor.
+
 
 Authors
 =======
