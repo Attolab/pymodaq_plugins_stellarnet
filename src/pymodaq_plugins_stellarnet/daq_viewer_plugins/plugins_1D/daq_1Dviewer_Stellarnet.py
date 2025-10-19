@@ -7,7 +7,7 @@ from pymodaq.utils.daq_utils import (
 from pymodaq.utils.data import Axis, DataFromPlugins, DataToExport
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
 from PyQt5 import QtWidgets
-import usb.legacy as usb
+import usb
 from pymodaq_plugins_stellarnet.hardware import stellarnet as sn
 from scipy.ndimage import uniform_filter1d
 import os, glob
@@ -191,12 +191,9 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
             self.x_axis.index = 0
 
             # initialize viewers pannel with the future type of data
-            name = ""#usb.util.get_string(
-                # self.controller._device, 100, self.controller._device.iProduct
-            # )
             data_init = [
                 DataFromPlugins(
-                    name=name,
+                    name="Spectrum",
                     dim="Data1D",
                     data=[np.asarray(self.controller.read_spectrum())],
                     axes=[self.x_axis],
@@ -204,8 +201,6 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
             ]
             QtWidgets.QApplication.processEvents()
             self.dte_signal_temp.emit(DataToExport('Stellarnet', data=data_init))
-            self.dte_signal_temp.emit(DataToExport('Stellarnet', data=data_init))
-            # works the second time for some reason
 
             try:
                 self.do_irradiance_calibration()
