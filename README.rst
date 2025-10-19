@@ -14,7 +14,7 @@ pymodaq_plugins_stellarnet (StellarNet)
 
 Custom PyMoDAQ Plugin to use StellarNet spectrometers in PyMoDAQ.
 
-**Important:** this plugin only works with Python 3.8, and will not work for later versions. This is due to the pyusb version that is currently used by the constructor.
+This plugin works now with modern python pyusb versions.
 
 
 Authors
@@ -51,7 +51,6 @@ Capabilities
 
 Installation notes
 ++++++++++++++++++
-**!! Warning !!** The plugin uses pyusb version 1.0.0b1 or earlier - haven't tested for later versions.
 On windows, the installation of appropriate drivers working with pyusb can be fidly. I had most success using Zadig (https://zadig.akeo.ie/) to update the spectrometer drivers. Sadly if you change the drivers to work with python, the software provided by StellarNet will not work anymore. Hopefully the PyMoDAQ plugin works well enough so that you won't need the constructor software anymore :-)
 
 Tested on Windows 10 with the driver WinUSB (v6.1.7600.16385).
