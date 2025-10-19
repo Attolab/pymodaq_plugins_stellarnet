@@ -5,10 +5,10 @@ from pymodaq.utils.daq_utils import (
     getLineInfo,
 )
 from pymodaq.utils.data import Axis, DataFromPlugins, DataToExport
-from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters
+from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
 from PyQt5 import QtWidgets
-import usb
-from ...hardware import stellarnet as sn
+import usb.legacy as usb
+from pymodaq_plugins_stellarnet.hardware import stellarnet as sn
 from scipy.ndimage import uniform_filter1d
 import os, glob
 
@@ -43,18 +43,6 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
             "title": "Irradiance or counts (T/F):",
             "name": "irradiance_on",
             "type": "bool",
-            "value": False,
-        },
-        {
-            "title": "Take snapshot",
-            "name": "take_snap",
-            "type": "bool_push",
-            "value": False,
-        },
-        {
-            "title": "Clear snapshot",
-            "name": "clear_snap",
-            "type": "bool_push",
             "value": False,
         },
         {
@@ -129,21 +117,6 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
         elif param.name() == "cal_path":
             self.do_irradiance_calibration()
 
-        elif param.name() == "take_snap":
-            try:
-                self.snapshot = self.parent.datas[0]['data'][0]  # Get currently displayed data
-                self.settings.child("take_snap").setValue(False)
-
-            except Exception as e:
-                self.emit_status(
-                    ThreadCommand("Update_Status", [getLineInfo() + str(e), "log"])
-                )
-                self.status.info = getLineInfo() + str(e)
-
-        elif param.name() == "clear_snap":
-            self.snapshot = None
-            self.settings.child("clear_snap").setValue(False)
-
     def ini_detector(self, controller=None):
         """Detector communication initialization
 
@@ -177,16 +150,21 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
                 else:
                     self.controller = controller
             else:
-                devices = usb.core.find(
+                devices = []
+                devices_iter = usb.core.find(
                     find_all=True,
                     idVendor=sn.StellarNet._STELLARNET_VENDOR_ID,
                     idProduct=sn.StellarNet._STELLARNET_PRODUCT_ID,
                 )
-                devices_count = len(list(devices))
+                for device in devices_iter:
+                    devices.append(device)
+
+                devices_count = len(devices)
                 if devices_count > 1:
                     print(
                         "Warning, several Stellarnet devices found. I'll load the first one only."
                     )
+
                 elif devices_count == 0:
                     raise Exception(
                         "No device was found"
@@ -213,9 +191,9 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
             self.x_axis.index = 0
 
             # initialize viewers pannel with the future type of data
-            name = usb.util.get_string(
-                self.controller._device, 100, self.controller._device.iProduct
-            )
+            name = ""#usb.util.get_string(
+                # self.controller._device, 100, self.controller._device.iProduct
+            # )
             data_init = [
                 DataFromPlugins(
                     name=name,
@@ -323,10 +301,6 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
 
         data_tot = [self.get_data()]
 
-        if self.snapshot is not None:
-            data_tot.append(self.snapshot)
-            label.append("Snapshot")
-
         self.dte_signal.emit(DataToExport('Stellarnet',
                                           data=[DataFromPlugins(
                                               name="StellarNet", data=data_tot, dim="Data1D", labels=label,
@@ -335,3 +309,6 @@ class DAQ_1DViewer_Stellarnet(DAQ_Viewer_base):
     def stop(self):
         self.emit_status(ThreadCommand('Update_Status', ['Stopping Acquisition']))
         return ''
+
+if __name__ == '__main__':
+    main(__file__, init=True)
